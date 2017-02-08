@@ -50,7 +50,58 @@
         </div>
         <pre class="debug"></pre>
         <script>
-            // your code goes here ...
+            var form = document.querySelector(".builder form");
+            var famAge = form.querySelector("input[name='age']");
+            var famRel = form.querySelector("select[name='rel']");
+            var famSmoker = form.querySelector("input[name='smoker']");
+
+            var household = document.querySelector(".household");
+
+            var famArray = [];
+
+            document.querySelector("button.add").addEventListener("click", displayFamily);
+            //document.querySelector("button[type='submit']").addEventListener("click", displayFamily);
+
+            // Should be "submit" family
+            function addFamily(age, rel, smoker) {
+                return {
+                    age: age,
+                    rel: rel,
+                    smoker: smoker
+                };
+            }
+
+            function removeFamily(e) {
+                e.preventDefault();
+                this.parentNode.outerHTML = "";
+            }
+
+            // Should be "add" family
+            function displayFamily(e){
+                e.preventDefault();
+
+                var new_famAge = parseFloat(famAge.value); // parseFloat better for validation than parseInt
+                var new_famRel = famRel.options[famRel.selectedIndex]; // .text displayed, .value passed to object
+                var new_famSmoker = famSmoker.checked; // true or false
+
+                if(new_famSmoker === true) 
+                    new_famSmoker = "smoker";
+                else
+                    new_famSmoker = "non-smoker";
+
+                household.innerHTML += "<li>" + new_famRel.text + ": " + new_famAge + " years old, " + new_famSmoker + " <button class='remove'>Remove</button></li>";
+
+                var remove_buttons = document.querySelectorAll("button.remove");
+
+                for(var x=0; x < remove_buttons.length; x++){
+                    remove_buttons[x].addEventListener("click", removeFamily);
+                }
+
+                // NOTE: move this to a SUBMIT function
+                //famArray.push(addFamily(new_famAge, new_famRel.value, new_famSmoker));
+
+                //console.log(fam.toSource());
+            }
         </script>
     </body>
 </html>
