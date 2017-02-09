@@ -4,6 +4,14 @@
 		<meta charset="utf-8">
 		<title>Household builder</title>
 		<style>
+			body {
+				font-family: Verdana, Helvetica, Arial, sans-serif;
+				font-size: 14px;
+			}
+			input + span, select + span {
+				color: red;
+				font-weight: bold;
+			}
 			.debug {
 				font-family: monospace;
 				border: 1px solid black;
@@ -57,6 +65,10 @@
 					rel: { value: '', error: '' },
 					smoker: { value: false, error: '' }
 				},
+				form: {
+					editted: 'You have editted your household.<br><strong>Please click "Submit" to save your changes.</strong>',
+					saved: 'Thank you! Changes to your household have been saved.<br>If you make any updates to your household, make sure to click "Submit" again.'
+				},
 				saved: { } // populated by saveInput()
 			};
 
@@ -75,10 +87,14 @@
 			var relError = document.createElement('span');
 			elems.rel.parentNode.appendChild(relError);
 
-			var errors = {
+			var formStatus = document.createElement('p');
+			elems.form.appendChild(formStatus);
+
+			var messages = {
 				age: elems.form.querySelector('input[name="age"] + span'),
-				rel: elems.form.querySelector('select[name="rel"] + span')
+				rel: elems.form.querySelector('select[name="rel"] + span'),
 				// smoker checkbox doesn't need an error msg
+				status: elems.form.querySelector('p')
 			};
 
 			var templates = {
@@ -122,8 +138,8 @@
 
 			// Render error messages
 			function renderInputState() {
-				errors.age.innerHTML = state.input.age.error;
-				errors.rel.innerHTML = state.input.rel.error;
+				messages.age.innerHTML = state.input.age.error;
+				messages.rel.innerHTML = state.input.rel.error;
 			}
 
 			// Render household
@@ -184,11 +200,27 @@
 				renderInputState();
 
 				// Add new family member if there are no errors
-				if(!state.input.age.error && !state.input.rel.error)
+				if(!state.input.age.error && !state.input.rel.error) {
+					messages.status.innerHTML = state.form.editted;
 					saveInput();
+				}
 
 				return false;
 			}, false);
+
+			// Submitting the whole household
+			elems.form.querySelector('button[type="submit"]').addEventListener('click', function(e){
+				e.preventDefault();
+
+				var request = new XMLHttpRequest();
+				request.open('POST', '/submitted', true);
+				request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+				request.send(state.saved);
+
+				messages.status.innerHTML = state.form.saved;
+
+				document.querySelector('.debug').innerHTML = JSON.stringify(state.saved, null, 2);
+			});
 
 		</script>
 	</body>
