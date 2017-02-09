@@ -12,6 +12,9 @@
         color: red;
         font-weight: bold;
       }
+      form > p {
+        background-color: pink;
+      }
       .debug {
         font-family: monospace;
         border: 1px solid black;
@@ -76,6 +79,7 @@
       var elems = {
         form: document.querySelector('.builder form'),
         saved: document.querySelector('.household'),
+        debug: document.querySelector('.debug'),
 
         age: document.querySelector('input[name="age"]'),
         rel: document.querySelector('select[name="rel"]'),
@@ -243,7 +247,8 @@
 
         messages.status.innerHTML = state.form.saved;
 
-        document.querySelector('.debug').innerHTML = JSON.stringify(state.saved, null, 2);
+        document.querySelector(".debug").style="display:block";
+        elems.debug.innerHTML = JSON.stringify(state.saved, null, 2);
       });
 
     </script>
