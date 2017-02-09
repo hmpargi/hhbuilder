@@ -1,107 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Household builder</title>
-        <style>
-            .debug {
-                font-family: monospace;
-                border: 1px solid black;
-                padding: 10px;
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Household builder</h1>
-        <div class="builder">
-            <ol class="household"></ol>
-            <form>
-                <div>
-                    <label>Age
-                        <input type="text" name="age">
-                    </label>
-                </div>
-                <div>
-                    <label>Relationship
-                        <select name="rel">
-                            <option value="">---</option>
-                            <option value="self">Self</option>
-                            <option value="spouse">Spouse</option>
-                            <option value="child">Child</option>
-                            <option value="parent">Parent</option>
-                            <option value="grandparent">Grandparent</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </label>
-                </div>
-                <div>
-                    <label>Smoker?
-                        <input type="checkbox" name="smoker">
-                    </label>
-                </div>
-                <div>
-                    <button class="add">add</button>
-                </div>
-                <div>
-                    <button type="submit">submit</button>
-                </div>
-            </form>
-        </div>
-        <pre class="debug"></pre>
-        <script>
-            var form = document.querySelector(".builder form");
-            var famAge = form.querySelector("input[name='age']");
-            var famRel = form.querySelector("select[name='rel']");
-            var famSmoker = form.querySelector("input[name='smoker']");
+	<head>
+		<meta charset="utf-8">
+		<title>Household builder</title>
+		<style>
+			.debug {
+				font-family: monospace;
+				border: 1px solid black;
+				padding: 10px;
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Household builder</h1>
+		<div class="builder">
+			<ol class="household"></ol>
+			<form>
+				<div>
+					<label>Age
+						<input type="text" name="age">
+					</label>
+				</div>
+				<div>
+					<label>Relationship
+						<select name="rel">
+							<option value="">---</option>
+							<option value="self">Self</option>
+							<option value="spouse">Spouse</option>
+							<option value="child">Child</option>
+							<option value="parent">Parent</option>
+							<option value="grandparent">Grandparent</option>
+							<option value="other">Other</option>
+						</select>
+					</label>
+				</div>
+				<div>
+					<label>Smoker?
+						<input type="checkbox" name="smoker">
+					</label>
+				</div>
+				<div>
+					<button class="add">add</button>
+				</div>
+				<div>
+					<button type="submit">submit</button>
+				</div>
+			</form>
+		</div>
+		<pre class="debug"></pre>
+		<script>
 
-            var household = document.querySelector(".household");
+			var state = {
+				input: {
+					age: { value: 0, error: '' },
+					rel: { value: '', error: '' },
+					smoker: { value: false, error: '' }
+				},
+				saved: { } // populated by saveInput()
+			};
 
-            var famArray = [];
+			var elems = {
+				form: document.querySelector('.builder form'),
+				saved: document.querySelector('.household'),
 
-            document.querySelector("button.add").addEventListener("click", displayFamily);
-            //document.querySelector("button[type='submit']").addEventListener("click", displayFamily);
+				age: document.querySelector('input[name="age"]'),
+				rel: document.querySelector('select[name="rel"]'),
+				smoker: document.querySelector('input[name="smoker"]')
+			};
 
-            // Should be "submit" family
-            function addFamily(age, rel, smoker) {
-                return {
-                    age: age,
-                    rel: rel,
-                    smoker: smoker
-                };
-            }
+			var ageError = document.createElement('span');
+			elems.age.parentNode.appendChild(ageError);
 
-            function removeFamily(e) {
-                e.preventDefault();
-                this.parentNode.outerHTML = "";
-            }
+			var relError = document.createElement('span');
+			elems.rel.parentNode.appendChild(relError);
 
-            // Should be "add" family
-            function displayFamily(e){
-                e.preventDefault();
+			var errors = {
+				age: elems.form.querySelector('input[name="age"] + span'),
+				rel: elems.form.querySelector('select[name="rel"] + span')
+				// smoker checkbox doesn't need an error msg
+			};
 
-                var new_famAge = parseFloat(famAge.value); // parseFloat better for validation than parseInt
-                var new_famRel = famRel.options[famRel.selectedIndex]; // .text displayed, .value passed to object
-                var new_famSmoker = famSmoker.checked; // true or false
+			var templates = {
+				savedMember: function(id, age, rel, smoker){ 
 
-                if(new_famSmoker === true) 
-                    new_famSmoker = "smoker";
-                else
-                    new_famSmoker = "non-smoker";
+					// create new list item
+					var elem = document.createElement('li');
+					elem.setAttribute('id', id);
 
-                household.innerHTML += "<li>" + new_famRel.text + ": " + new_famAge + " years old, " + new_famSmoker + " <button class='remove'>Remove</button></li>";
+					// modify smoker info for friendlier display
+					if(smoker === true)
+						smoker = "smoker";
+					else
+						smoker = "non-smoker";
 
-                var remove_buttons = document.querySelectorAll("button.remove");
+					// add family member info
+					elem.innerHTML = rel + ' - ' + age + ' years old, ' + smoker;
 
-                for(var x=0; x < remove_buttons.length; x++){
-                    remove_buttons[x].addEventListener("click", removeFamily);
-                }
+					// add remove button
+					var button = document.createElement('input');
+					button.setAttribute('type', 'button');
+					button.setAttribute('value', 'Remove');
 
-                // NOTE: move this to a SUBMIT function
-                //famArray.push(addFamily(new_famAge, new_famRel.value, new_famSmoker));
+					// add event listener for remove button
+					button.addEventListener('click', function(){
+						removeSaved(id);
+					}, false);
+						
+					elem.appendChild(button);
+					return elem;
+				}
+			};
 
-                //console.log(fam.toSource());
-            }
-        </script>
-    </body>
+			// ---
+			function makeSequence(start){
+				var i = start;
+				return function(){ return i++; }
+			}
+
+			var generateId = makeSequence(0);
+
+			// Render error messages
+			function renderInputState() {
+				errors.age.innerHTML = state.input.age.error;
+				errors.rel.innerHTML = state.input.rel.error;
+			}
+
+			// Render household
+			function renderSavedState() {
+				elems.saved.innerHTML = ''; // clearing
+				
+				for(var id in state.saved){
+					var child = templates.savedMember(id, state.saved[id].age, state.saved[id].rel, state.saved[id].smoker);    
+					elems.saved.appendChild(child);
+				}
+			}
+
+			// Saving new family member
+			function saveInput() {
+				if(state.input.age.error || state.input.rel.error)
+					return;
+				
+				state.saved[generateId()] = { 
+					age: state.input.age.value, 
+					rel: state.input.rel.value,
+					smoker: state.input.smoker
+				};
+				renderSavedState();
+			}
+
+			// Removing family member
+			function removeSaved(id) {
+				delete state.saved[id];
+				renderSavedState();
+			}
+
+			// Listening for new family member
+			elems.form.querySelector('.add').addEventListener('click', function(e){
+				e.preventDefault();
+
+				var age = parseFloat(elems.age.value); // parseFloat has better validation than parseInt
+				var rel = elems.rel.options[elems.rel.selectedIndex].value;
+				var smoker = elems.smoker.checked;
+				state.input.smoker = smoker;
+
+				if(isNaN(age) || age <= 0){
+					state.input.age.error = 'Please enter a valid age.';
+				}
+				else {
+					state.input.age.error = '';
+					state.input.age.value = age;
+				}
+
+				if(rel === ''){
+					state.input.rel.error = 'Please select a relationship.';
+				}
+				else {
+					state.input.rel.error = '';
+					state.input.rel.value = rel;
+				}
+
+				// Update error messages
+				renderInputState();
+
+				// Add new family member if there are no errors
+				if(!state.input.age.error && !state.input.rel.error)
+					saveInput();
+
+				return false;
+			}, false);
+
+		</script>
+	</body>
 </html>
