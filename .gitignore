@@ -1,1 +1,4 @@
-.DS_Storeslcsp/
+.DS_Store
+comments.md
+*.zip
+test/
